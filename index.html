@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Leaflet Earth-Style Slideshow (Fixed Zoom)</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <style>
+      /* ===== GENERAL PAGE STYLES ===== */
+      html, body {
+        height: 100%;
+        margin: 0;
+        background: linear-gradient(135deg, #001b33, #002d22);
+        font-family: "Courier New", sans-serif;
+      }
+
+      #map {
+        height: 100%;
+        width: 100%;
+      }
+
+      /* ===== FLOATING INFO CARD ===== */
+      .info-card {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 25, 25, 0.85);
+        border: 1px solid rgba(0, 255, 100, 0.2);
+        border-radius: 16px;
+        box-shadow: 0 0 20px rgba(0, 255, 150, 0.25);
+        color: #e4f5e4;
+        padding: 20px 25px;
+        width: 90%;
+        max-width: 420px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        transition: all 0.4s ease;
+        z-index: 1000;
+      }
+
+      .info-card h2 {
+        margin: 0 0 10px;
+        font-size: 1.6em;
+        color: #90ee90;
+        text-align: center;
+      }
+
+      .info-card p {
+        margin: 5px 0 15px;
+        color: #c8dec8;
+        line-height: 1.4;
+        text-align: center;
+      }
+
+      .info-card img {
+        width: 100%;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        box-shadow: 0 0 10px rgba(0, 255, 150, 0.15);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .info-card img:hover {
+        transform: scale(1.03);
+        box-shadow: 0 0 20px rgba(0, 255, 150, 0.4);
+      }
+
+      /* ===== BUTTONS ===== */
+      .info-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 15px;
+        font-weight: 500;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background: linear-gradient(90deg, #003d3d, #004d66);
+        color: #e4f5e4;
+        box-shadow: 0 0 10px rgba(0, 255, 150, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      button:hover {
+        background: linear-gradient(90deg, #004d66, #006b66);
+        box-shadow: 0 0 20px rgba(0, 255, 150, 0.3);
+        transform: translateY(-2px);
+      }
+
+      @media (max-width: 600px) {
+        .info-card {
+          bottom: 15px;
+          padding: 15px 18px;
+          max-width: 90%;
+        }
+
+        button {
+          font-family: "Courier New", Sans-Serif;
+          padding: 15px 30px;
+          font-size: 18px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="map"></div>
+
+    <!-- Floating Info Card -->
+    <div class="info-card">
+      <h2 id="landmark-title">Loading map...</h2>
+      <p id="landmark-description"></p>
+      <img id="landmark-image" src="" alt="" style="display:none;">
+      <div class="info-buttons">
+        <button onclick="prevLandmark()">⬅️Previous</button>
+        <button onclick="nextLandmark()">Next ➡️</button>
+      </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+      let map, features = [], markers = [], currentIndex = 0;
+      const fixedZoom = 14; // 🔒 Fixed zoom level (camera height)
+
+      async function loadGeoJSON() {
+        try {
+          const response = await fetch("saltwater.json");
+          const geojson = await response.json();
+          features = geojson.features;
+          initMap();
+        } catch (err) {
+          console.error("Error loading GeoJSON:", err);
+          document.getElementById("landmark-title").innerText = "Failed to load GeoJSON file";
+        }
+      }
+
+      function initMap() {
+        const first = features[0].geometry.coordinates;
+        const firstLatLng = [first[1], first[0]];
+
+        map = L.map("map", { zoomControl: false }).setView(firstLatLng, fixedZoom);
+
+        // Satellite imagery
+        L.tileLayer(
+          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          { attribution: "Tiles © Esri" }
+        ).addTo(map);
+
+        // Add markers (without popups)
+        features.forEach((feature) => {
+          const coords = feature.geometry.coordinates;
+          const latLng = [coords[1], coords[0]];
+          const marker = L.marker(latLng).addTo(map);
+          markers.push(marker);
+        });
+
+        updateInfo();
+      }
+
+      function updateInfo() {
+        const feature = features[currentIndex];
+        const coords = feature.geometry.coordinates;
+        const latLng = [coords[1], coords[0]];
+        const props = feature.properties;
+
+        // Fixed zoom and smooth fly
+        map.flyTo(latLng, fixedZoom, {
+          animate: true,
+          duration: 1.5,
+        });
+
+        // Update info card content
+        document.getElementById("landmark-title").innerText =
+          props.name || `Location ${currentIndex + 1}`;
+        document.getElementById("landmark-description").innerText =
+          props.description || "";
+
+        const imgElement = document.getElementById("landmark-image");
+        if (props.image) {
+          imgElement.src = props.image;
+          imgElement.style.display = "block";
+        } else {
+          imgElement.style.display = "none";
+        }
+      }
+
+      function nextLandmark() {
+        currentIndex = (currentIndex + 1) % features.length;
+        updateInfo();
+      }
+
+      function prevLandmark() {
+        currentIndex = (currentIndex - 1 + features.length) % features.length;
+        updateInfo();
+      }
+
+      window.onload = loadGeoJSON;
+    </script>
+  </body>
+</html>
