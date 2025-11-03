@@ -1,0 +1,49 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.841978, 14.7523034, 0]
+      },
+      "properties": {
+        "name": "Bulakan Mangrove Nursery and Eco-Park",
+        "description": "Bulakan, Bulacan",
+        "image": "https://drive.google.com/uc?id=1re7DFUB647xD5Vc1_kyU-mBShUQUG-BS",
+        "styleUrl": "#__managed_style_063DA266E03B60FB0991",
+        "fill-opacity": 0.25,
+        "fill": "#ffffff",
+        "stroke-opacity": 1,
+        "stroke": "#fbc02d",
+        "stroke-width": 3.2,
+        "icon-offset": [64, 128],
+        "icon-offset-units": ["pixels", "insetPixels"],
+        "icon": "https://earth.google.com/earth/document/icon?color=fbc02d&id=2000&scale=4"
+      },
+      "id": "0C24C07CCC3B60D42A5C"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [120.9058691, 14.7214219, 0]
+      },
+      "properties": {
+        "name": "Binuangan Coastline",
+        "description": "Binuangan, Obando, Bulacan",
+        "image": "https://drive.google.com/uc?id=1GG1ngrdFAt_1HBa5x_Ykd3JUUrrQtYAK",
+        "styleUrl": "#__managed_style_063DA266E03B60FB0991",
+        "fill-opacity": 0.25,
+        "fill": "#ffffff",
+        "stroke-opacity": 1,
+        "stroke": "#fbc02d",
+        "stroke-width": 3.2,
+        "icon-offset": [64, 128],
+        "icon-offset-units": ["pixels", "insetPixels"],
+        "icon": "https://earth.google.com/earth/document/icon?color=fbc02d&id=2000&scale=4"
+      },
+      "id": "0B5A0014583B60D46278"
+    }
+  ]
+}
